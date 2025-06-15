@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/home.css">
+    <title>Webtools</title>
+</head>
+<body>
+    <button class="menu-button" onclick="toggleMenu()">☰</button>
+
+    <div class="sidebar" id="sidebar">
+        <h2>Tools</h2>
+        <a herf="https://MemoryError404.github.io/Webtools/math.html">math</a>
+        <a herf="https://MemoryError404.github.io/Webtools/clock.html">Clock</a>
+    </div>
+
+    <div class="content">
+        <h1 style="text-align: center;">Webtools</h1>
+        <div class="canvas-container">
+        <div class="game-wrapper">
+            <canvas id="game" width="400" height="400"></canvas>
+            <button id="restart-btn" style="display:none;" onclick="init()">重新開始</button>
+        </div>
+        </br>
+        <p id="score">分數：0</p>
+        </div>
+    </div>
+
+    <script>
+    const sidebar = document.getElementById("sidebar");
+
+    function toggleMenu() {
+      sidebar.classList.add("active");
+    }
+
+    // 當滑鼠離開 sidebar 時，關閉它
+    sidebar.addEventListener("mouseleave", () => {
+      sidebar.classList.remove("active");
+    });
+    </script>
+    <script src="js/snake.js"></script>
+</body>
+</html>
