@@ -16,10 +16,19 @@
       margin: 0;
     }
   </style>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <button class="menu-button" onclick="toggleMenu()">☰</button>
   <div id="clock">--:--</div>
+  <div class="sidebar" id="sidebar">
+    <a href="index.html">
+      <h2>WebTools</h2>
+    </a>
+    <a href="clock.html">Clock</a>
+  </div>
 
+  <script src="js/sidebar.js"></script>
   <script>
     function updateTime() {
       const now = new Date();

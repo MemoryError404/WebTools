@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,9 +10,11 @@
     <button class="menu-button" onclick="toggleMenu()">☰</button>
 
     <div class="sidebar" id="sidebar">
-        <h2>Tools</h2>
-        <a herf="https://MemoryError404.github.io/Webtools/math.html">math</a>
-        <a herf="https://MemoryError404.github.io/Webtools/clock.html">Clock</a>
+    <a href="index.html">
+        <h2>WebTools</h2>
+    </a>
+    <a href="math.html">Math</a>
+    <a href="clock.html">Clock</a>
     </div>
 
     <div class="content">
@@ -27,18 +29,7 @@
         </div>
     </div>
 
-    <script>
-    const sidebar = document.getElementById("sidebar");
-
-    function toggleMenu() {
-      sidebar.classList.add("active");
-    }
-
-    // 當滑鼠離開 sidebar 時，關閉它
-    sidebar.addEventListener("mouseleave", () => {
-      sidebar.classList.remove("active");
-    });
-    </script>
+    <script src="js/sidebar.js"></script>
     <script src="js/snake.js"></script>
 </body>
 </html>
