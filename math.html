@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LaTeX Renderer</title>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <style>
+    body {
+      display: flex;
+      margin: 0;
+      height: 100vh;
+      font-family: sans-serif;
+      background: #000;
+      color: #fff;
+    }
+    textarea {
+      width: 50%;
+      padding: 1rem;
+      font-size: 1rem;
+      border: none;
+      outline: none;
+      resize: none;
+      background: #111;
+      color: #fff;
+      white-space: pre;
+    }
+    #output {
+      width: 50%;
+      padding: 1rem;
+      overflow: auto;
+      background: #000;
+      color: #fff;
+    }
+    .mjx-container {
+      color: white !important;
+    }
+    .button-bar {
+      position: absolute;
+      bottom: 1rem;
+      left: 1rem;
+      z-index: 100;
+    }
+    .button-bar button {
+      padding: 0.4rem 0.8rem;
+      margin-right: 0.4rem;
+      background: #333;
+      color: white;
+      border: 1px solid #555;
+      cursor: pointer;
+    }
+    .button-bar button:hover {
+      background: #444;
+    }
+  </style>
+</head>
+<body>
+  <textarea id="input" placeholder="Type LaTeX here..."></textarea>
+  <div id="output"></div>
+
+  <div class="button-bar">
+    <button onclick="insertFrac()">插入 分數 </button>
+    <button onclick="insertSqrt()">插入 平方根 </button>
+    <button onclick="insertPower()">插入次方 </button>
+    <button onclick="insertBraces()">插入大括號 </button>
+    <button onclick="insertAlign()">插入 align 環境</button>
+  </div>
+
+  <script>
+    const input = document.getElementById('input');
+    const output = document.getElementById('output');
+
+    function render() {
+      const raw = input.value;
+
+      // 不自動包環境，直接渲染使用者輸入
+      output.innerHTML = '$$' + raw + '$$';
+      MathJax.typesetPromise([output]);
+    }
+
+    input.addEventListener('input', render);
+
+    // 自動縮排功能：在 textarea 中按 Enter 自動加兩個空白
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        const start = input.selectionStart;
+        const end = input.selectionEnd;
+        const before = input.value.substring(0, start);
+        const after = input.value.substring(end);
+        const indent = '  ';
+        input.value = before + '\n' + indent + after;
+        input.selectionStart = input.selectionEnd = start + 1 + indent.length;
+        e.preventDefault();
+        render();
+      }
+    });
+
+    function insertAtCursor(snippet, cursorOffset) {
+      const start = input.selectionStart;
+      const end = input.selectionEnd;
+      const text = input.value;
+
+      input.value = text.slice(0, start) + snippet + text.slice(end);
+      render();
+
+      input.focus();
+      input.setSelectionRange(start + cursorOffset, start + cursorOffset);
+    }
+
+    function insertFrac() {
+      insertAtCursor('\\frac{}{}', 6);
+    }
+
+    function insertSqrt() {
+      insertAtCursor('\\sqrt{}', 6);
+    }
+
+    function insertPower() {
+      insertAtCursor('^{}', 2);
+    }
+
+    function insertBraces() {
+      insertAtCursor('{}', 1);
+    }
+
+    function insertAlign() {
+      const snippet = '\\begin{align}\n  \n\\end{align}';
+      insertAtCursor(snippet, 16);
+    }
+
+    render();
+  </script>
+</body>
+</html>
