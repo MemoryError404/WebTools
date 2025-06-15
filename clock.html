@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Clock</title>
+  <style>
+    body {
+      background-color: #000;
+      color: #fff;
+      font-family: monospace;
+      font-size: 10em;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="clock">--:--</div>
+
+  <script>
+    function updateTime() {
+      const now = new Date();
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('clock').textContent = `${hours}:${minutes}`;
+    }
+
+    setInterval(updateTime, 1000); // 仍每秒更新，以避免分鐘剛跳過去時沒更新
+    updateTime();
+  </script>
+</body>
+</html>
