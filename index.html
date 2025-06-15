@@ -11,8 +11,8 @@
 
     <div class="sidebar" id="sidebar">
         <h2>Tools</h2>
-        <a herf="https://memoryerror404.github.io/WebTools/math.html">math</a>
-        <a herf="https://memoryerror404.github.io/WebTools/clock.html">Clock</a>
+        <a href="math.html">math</a>
+        <a href="clock.html">Clock</a>
     </div>
 
     <div class="content">
@@ -27,18 +27,7 @@
         </div>
     </div>
 
-    <script>
-    const sidebar = document.getElementById("sidebar");
-
-    function toggleMenu() {
-      sidebar.classList.add("active");
-    }
-
-    // 當滑鼠離開 sidebar 時，關閉它
-    sidebar.addEventListener("mouseleave", () => {
-      sidebar.classList.remove("active");
-    });
-    </script>
+    <script src="js/sidebar.js"></script>
     <script src="js/snake.js"></script>
 </body>
 </html>
