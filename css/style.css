@@ -8,6 +8,7 @@
     color: white;
     padding: 20px;
     transition: left 0.3s ease;
+    font-size:16px;
 }
 
 .sidebar.active {
@@ -23,4 +24,16 @@
 
 .sidebar a:hover {
     text-decoration: underline;
+}
+
+.menu-button {
+    font-size: 18px;
+    background-color: #444;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    position: fixed;
+    top: 0px;
+    left: 0px;
 }
