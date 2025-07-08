@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8"> 
+  <title>Timer</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: black;
+      color: white;
+      font-family: sans-serif;
+      height: 100%;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    .time-display {
+      font-size: 4em;
+      margin-bottom: 0.5em;
+    }
+
+    .lap-time {
+      font-size: 1.5em;
+      margin-bottom: 1em;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 1em;
+      margin-bottom: 1em;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    button {
+      font-size: 1em;
+      padding: 0.5em 1em;
+      cursor: pointer;
+      border: none;
+      background-color: #333;
+      color: white;
+      border-radius: 5px;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .laps {
+      width: 100%;
+      max-height: 30%;
+      overflow-y: auto;
+      text-align: center;
+      font-size: 1.2em;
+    }
+
+    .lap-entry {
+      margin: 0.2em 0;
+    }
+  </style>
+  <link rel="stylesheet" href="css/home.css">
+</head>
+<body>
+    <button class="menu-button" onclick="toggleMenu()">☰</button>
+
+    <div class="sidebar" id="sidebar">
+    <a href="index.html">
+        <h2>WebTools</h2>
+    </a>
+    <a href="math.html">Math</a>
+    <a href="clock.html">Clock</a>
+    </div>
+
+  <div class="time-display" id="main-timer">00:00:00</div>
+  <div class="lap-time" id="current-lap">分圈耗時：00:00:00</div>
+  <div class="buttons">
+    <button id="copy-btn">複製</button>
+    <button id="control-btn">開始</button>
+    <button id="lap-btn" disabled>分圈</button>
+    <button id="reset-btn">重設</button>
+  </div>
+  <div class="laps" id="lap-list"></div>
+
+  <script>
+    let startTime = null;
+    let elapsedBeforePause = 0;
+    let intervalId = null;
+    let laps = [];
+    let lastLapTime = 0;
+    let isRunning = false;
+    let isPaused = false;
+
+    const mainTimer = document.getElementById("main-timer");
+    const currentLap = document.getElementById("current-lap");
+    const lapList = document.getElementById("lap-list");
+    const controlBtn = document.getElementById("control-btn");
+    const lapBtn = document.getElementById("lap-btn");
+    const copyBtn = document.getElementById("copy-btn");
+    const resetBtn = document.getElementById("reset-btn");
+
+    function formatTime(ms) {
+      const totalSeconds = Math.floor(ms / 1000);
+      const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+      const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+      const seconds = String(totalSeconds % 60).padStart(2, '0');
+      return `${hours}:${minutes}:${seconds}`;
+    }
+
+    function updateDisplay() {
+      const now = Date.now();
+      const elapsed = elapsedBeforePause + (now - startTime);
+      mainTimer.textContent = formatTime(elapsed);
+      currentLap.textContent = `分圈耗時：${formatTime(elapsed - lastLapTime)}`;
+    }
+
+    function startTimer() {
+      startTime = Date.now();
+      intervalId = setInterval(updateDisplay, 100);
+      isRunning = true;
+      isPaused = false;
+      controlBtn.textContent = "暫停";
+      lapBtn.disabled = false;
+    }
+
+    function pauseTimer() {
+      clearInterval(intervalId);
+      intervalId = null;
+      isRunning = false;
+      isPaused = true;
+      elapsedBeforePause += Date.now() - startTime;
+      controlBtn.textContent = "繼續";
+      lapBtn.disabled = true;
+    }
+
+    function resumeTimer() {
+      startTime = Date.now();
+      intervalId = setInterval(updateDisplay, 100);
+      isRunning = true;
+      isPaused = false;
+      controlBtn.textContent = "暫停";
+      lapBtn.disabled = false;
+    }
+
+    function resetTimer() {
+      clearInterval(intervalId);
+      intervalId = null;
+      startTime = null;
+      elapsedBeforePause = 0;
+      lastLapTime = 0;
+      laps = [];
+      isRunning = false;
+      isPaused = false;
+      mainTimer.textContent = "00:00:00";
+      currentLap.textContent = "分圈耗時：00:00:00";
+      lapList.innerHTML = "";
+      lapBtn.disabled = true;
+      controlBtn.textContent = "開始";
+    }
+
+    function recordLap() {
+      const now = Date.now();
+      const elapsed = elapsedBeforePause + (now - startTime);
+      const lapTime = elapsed - lastLapTime;
+      laps.push(lapTime);
+      lastLapTime += lapTime;
+
+      const lapEntry = document.createElement("div");
+      lapEntry.className = "lap-entry";
+      lapEntry.textContent = `${laps.length} ${formatTime(lapTime)}`; // 移除 #
+      lapList.appendChild(lapEntry);
+      lapList.scrollTop = lapList.scrollHeight;
+    }
+
+    function copyLaps() {
+      const text = laps.map((lap, i) => `${i + 1} ${formatTime(lap)}`).join('\n'); // 移除 #
+      navigator.clipboard.writeText(text).then(() => {
+        copyBtn.textContent = "已複製";
+        setTimeout(() => copyBtn.textContent = "複製", 2000);
+      });
+    }
+
+    controlBtn.addEventListener("click", () => {
+      if (!isRunning && !isPaused) {
+        startTimer();
+      } else if (isRunning) {
+        pauseTimer();
+      } else if (isPaused) {
+        resumeTimer();
+      }
+    });
+
+    lapBtn.addEventListener("click", () => {
+      if (isRunning) {
+        recordLap();
+      }
+    });
+
+    copyBtn.addEventListener("click", copyLaps);
+    resetBtn.addEventListener("click", resetTimer);
+  </script>
+  <script src="js/sidebar.js"></script>
+</body>
+</html>
