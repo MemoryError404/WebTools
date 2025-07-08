@@ -53,8 +53,31 @@
       background: #444;
     }
   </style>
+  <link rel="stylesheet" href="css/home.css">
+  <style>
+    body {
+  display: flex;
+  margin: 0;
+  height: 100vh;
+  font-family: sans-serif;
+  background: #111;
+  color: #fff;
+  padding-left: 50px; /* 新增這行，讓內容往右移 */
+}
+  </style>
 </head>
 <body>
+    <button class="menu-button" onclick="toggleMenu()">☰</button>
+
+    <div class="sidebar" id="sidebar">
+    <a href="index.html">
+        <h2>WebTools</h2>
+    </a>
+    <a href="math.html">Math</a>
+    <a href="clock.html">Clock</a>
+    <a href="timer.html">Timer</a>
+    </div>
+  
   <textarea id="input" placeholder="Type LaTeX here..."></textarea>
   <div id="output"></div>
 
@@ -130,5 +153,6 @@
 
     render();
   </script>
+  <script src="js/sidebar.js"></script>
 </body>
 </html>
