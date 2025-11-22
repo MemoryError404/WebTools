@@ -2,21 +2,56 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>計時器</title>
+  <title>學習計時器</title>
   <style>
-    body { font-family: sans-serif; background: #222; color: #fff; text-align: center; padding: 20px; }
-    #timer { font-size: 48px; margin: 20px 0; }
-    button { font-size: 18px; padding: 10px 20px; margin: 5px; cursor: pointer; border-radius: 8px; border: none; }
-    #history { margin-top: 20px; text-align: left; max-height: 300px; overflow-y: auto; background: #333; padding: 10px; border-radius: 8px; }
+    body {
+      background-color: #111;
+      color: #fff;
+      font-family: sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      flex-direction: column;
+      padding-left: 50px; /* For sidebar */
+    }
+    #timer { font-size: 4em; margin: 0.5em 0; }
+    .buttons { display: flex; gap: 1em; margin-bottom: 1em; }
+    button {
+      font-size: 1em;
+      padding: 0.5em 1em;
+      cursor: pointer;
+      border: none;
+      background-color: #333;
+      color: white;
+      border-radius: 5px;
+    }
+    #history {
+      margin-top: 20px;
+      text-align: left;
+      width: 90%;
+      max-width: 600px;
+      max-height: 200px;
+      overflow-y: auto;
+      background: #222;
+      padding: 10px;
+      border-radius: 8px;
+    }
   </style>
+  <link rel="stylesheet" href="css/home.css">
+  <link rel="icon" href="logo.jpg" type="image/x-icon">
 </head>
 <body>
-  <h1>計時器</h1>
+  <button class="menu-button" onclick="toggleMenu()">☰</button>
+  <div class="sidebar" id="sidebar"></div>
+
   <div id="timer">00:00:00</div>
-  <button id="startBtn">開始</button>
-  <button id="pauseBtn">暫停</button>
-  <button id="resetBtn">重設</button>
-  <button id="clearHistoryBtn">清除歷史</button>
+  <div class="buttons">
+    <button id="toggleBtn">開始</button>
+    <button id="resetBtn">重設</button>
+    <button id="clearHistoryBtn">清除歷史</button>
+  </div>
   <div id="history"></div>
 
   <script>
@@ -27,6 +62,7 @@
 
     const timerDisplay = document.getElementById('timer');
     const historyDiv = document.getElementById('history');
+    const toggleBtn = document.getElementById('toggleBtn');
 
     function loadHistory() {
       let history = JSON.parse(localStorage.getItem('timerHistory')) || [];
@@ -61,64 +97,96 @@
         const now = Date.now();
         const elapsed = (now - startTime) + elapsedBeforePause;
         timerDisplay.textContent = formatTime(elapsed);
-      } else {
-        timerDisplay.textContent = formatTime(elapsedBeforePause);
       }
     }
 
-    function startTimer() {
-      if (!isRunning) {
-        startTime = Date.now();
-        isRunning = true;
-        saveHistory({ action: '開始', time: new Date().toLocaleString() });
-        timerInterval = setInterval(updateDisplay, 500);
-      }
-    }
-
-    function pauseTimer() {
-      if (isRunning) {
+    function toggleTimer() {
+      if (isRunning) { // Pause
         const now = Date.now();
         elapsedBeforePause += (now - startTime);
         isRunning = false;
         clearInterval(timerInterval);
-        updateDisplay();
+        timerInterval = null;
+        toggleBtn.textContent = '繼續';
         saveHistory({ action: '暫停', time: new Date().toLocaleString() });
+        localStorage.setItem('studyTimerState', JSON.stringify({ elapsed: elapsedBeforePause }));
+      } else { // Start or Resume
+        startTime = Date.now();
+        isRunning = true;
+        const action = elapsedBeforePause > 0 ? '繼續' : '開始';
+        saveHistory({ action: action, time: new Date().toLocaleString() });
+        toggleBtn.textContent = '暫停';
+        if (!timerInterval) {
+            timerInterval = setInterval(updateDisplay, 500);
+        }
       }
     }
 
     function resetTimer() {
       clearInterval(timerInterval);
+      timerInterval = null;
       startTime = null;
       elapsedBeforePause = 0;
       isRunning = false;
-      updateDisplay();
+      timerDisplay.textContent = formatTime(0);
+      toggleBtn.textContent = '開始';
       saveHistory({ action: '重設', time: new Date().toLocaleString() });
+      localStorage.removeItem('studyTimerState');
     }
 
     function clearHistory() {
       localStorage.removeItem('timerHistory');
       renderHistory();
     }
+    
+    function setupSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        sidebar.innerHTML = `
+            <a href="index.html"><h2>WebTools</h2></a>
+            <a href="clock.html">Clock</a>
+            <a href="timer.html">Timer</a>
+            <a href="math.html">Math</a>
+            <a href="studytimer.html">Study Timer</a>
+        `;
+    }
 
-    document.addEventListener('keydown', e => {
-      if (e.code === 'Space') {
-        e.preventDefault();
-        if (isRunning) pauseTimer(); else startTimer();
-      }
-    });
+    function init() {
+        document.addEventListener('keydown', e => {
+            if (e.code === 'Space' && e.target === document.body) {
+                e.preventDefault();
+                toggleTimer();
+            }
+        });
 
-    window.addEventListener('beforeunload', e => {
-      e.preventDefault();
-      e.returnValue = '確定要關閉網頁嗎？';
-    });
+        toggleBtn.addEventListener('click', toggleTimer);
+        document.getElementById('resetBtn').addEventListener('click', resetTimer);
+        document.getElementById('clearHistoryBtn').addEventListener('click', clearHistory);
 
-    document.getElementById('startBtn').addEventListener('click', startTimer);
-    document.getElementById('pauseBtn').addEventListener('click', pauseTimer);
-    document.getElementById('resetBtn').addEventListener('click', resetTimer);
-    document.getElementById('clearHistoryBtn').addEventListener('click', clearHistory);
+        window.addEventListener('beforeunload', () => {
+            if (isRunning) {
+                const now = Date.now();
+                elapsedBeforePause += (now - startTime);
+            }
+            if (elapsedBeforePause > 0) {
+                localStorage.setItem('studyTimerState', JSON.stringify({ elapsed: elapsedBeforePause }));
+            }
+        });
 
-    renderHistory();
-    updateDisplay();
+        const savedState = JSON.parse(localStorage.getItem('studyTimerState'));
+        if (savedState && savedState.elapsed > 0) {
+            elapsedBeforePause = savedState.elapsed;
+            timerDisplay.textContent = formatTime(elapsedBeforePause);
+            toggleBtn.textContent = '繼續';
+        } else {
+            timerDisplay.textContent = formatTime(0);
+        }
+
+        setupSidebar();
+        renderHistory();
+    }
+
+    init();
   </script>
+  <script src="js/sidebar.js"></script>
 </body>
 </html>
