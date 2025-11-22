@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>計時器</title>
+  <style>
+    body { font-family: sans-serif; background: #222; color: #fff; text-align: center; padding: 20px; }
+    #timer { font-size: 48px; margin: 20px 0; }
+    button { font-size: 18px; padding: 10px 20px; margin: 5px; cursor: pointer; border-radius: 8px; border: none; }
+    #history { margin-top: 20px; text-align: left; max-height: 300px; overflow-y: auto; background: #333; padding: 10px; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <h1>計時器</h1>
+  <div id="timer">00:00:00</div>
+  <button id="startBtn">開始</button>
+  <button id="pauseBtn">暫停</button>
+  <button id="resetBtn">重設</button>
+  <button id="clearHistoryBtn">清除歷史</button>
+  <div id="history"></div>
+
+  <script>
+    let startTime = null;
+    let elapsedBeforePause = 0;
+    let isRunning = false;
+    let timerInterval;
+
+    const timerDisplay = document.getElementById('timer');
+    const historyDiv = document.getElementById('history');
+
+    function loadHistory() {
+      let history = JSON.parse(localStorage.getItem('timerHistory')) || [];
+      const twoDaysAgo = Date.now() - 2 * 24 * 60 * 60 * 1000;
+      history = history.filter(h => new Date(h.time).getTime() >= twoDaysAgo);
+      localStorage.setItem('timerHistory', JSON.stringify(history));
+      return history;
+    }
+
+    function saveHistory(entry) {
+      let history = loadHistory();
+      history.unshift(entry);
+      localStorage.setItem('timerHistory', JSON.stringify(history));
+      renderHistory();
+    }
+
+    function renderHistory() {
+      let history = loadHistory();
+      historyDiv.innerHTML = '<h3>歷史紀錄</h3>' + history.map(h => `<div>[${h.action}] ${h.time}</div>`).join('');
+    }
+
+    function formatTime(ms) {
+      let totalSeconds = Math.floor(ms / 1000);
+      let hours = Math.floor(totalSeconds / 3600);
+      let minutes = Math.floor((totalSeconds % 3600) / 60);
+      let seconds = totalSeconds % 60;
+      return [hours, minutes, seconds].map(v => String(v).padStart(2, '0')).join(':');
+    }
+
+    function updateDisplay() {
+      if (isRunning) {
+        const now = Date.now();
+        const elapsed = (now - startTime) + elapsedBeforePause;
+        timerDisplay.textContent = formatTime(elapsed);
+      } else {
+        timerDisplay.textContent = formatTime(elapsedBeforePause);
+      }
+    }
+
+    function startTimer() {
+      if (!isRunning) {
+        startTime = Date.now();
+        isRunning = true;
+        saveHistory({ action: '開始', time: new Date().toLocaleString() });
+        timerInterval = setInterval(updateDisplay, 500);
+      }
+    }
+
+    function pauseTimer() {
+      if (isRunning) {
+        const now = Date.now();
+        elapsedBeforePause += (now - startTime);
+        isRunning = false;
+        clearInterval(timerInterval);
+        updateDisplay();
+        saveHistory({ action: '暫停', time: new Date().toLocaleString() });
+      }
+    }
+
+    function resetTimer() {
+      clearInterval(timerInterval);
+      startTime = null;
+      elapsedBeforePause = 0;
+      isRunning = false;
+      updateDisplay();
+      saveHistory({ action: '重設', time: new Date().toLocaleString() });
+    }
+
+    function clearHistory() {
+      localStorage.removeItem('timerHistory');
+      renderHistory();
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        if (isRunning) pauseTimer(); else startTimer();
+      }
+    });
+
+    window.addEventListener('beforeunload', e => {
+      e.preventDefault();
+      e.returnValue = '確定要關閉網頁嗎？';
+    });
+
+    document.getElementById('startBtn').addEventListener('click', startTimer);
+    document.getElementById('pauseBtn').addEventListener('click', pauseTimer);
+    document.getElementById('resetBtn').addEventListener('click', resetTimer);
+    document.getElementById('clearHistoryBtn').addEventListener('click', clearHistory);
+
+    renderHistory();
+    updateDisplay();
+  </script>
+</body>
+</html>
