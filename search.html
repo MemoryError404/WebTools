@@ -12,6 +12,9 @@
 </style>
 
 <!-- 勾選區（在頂部） -->
+<div id="searchbox">
+    <input type="text" placeholder="請輸入關鍵字" onchange="window.location.href=`${window.location.pathname}?q=${this.value}`">
+</div>
 <div id="sources"></div>
 <div id="search_cols" style="margin-top: 8px;">搜尋欄位：</div>
 <hr>
